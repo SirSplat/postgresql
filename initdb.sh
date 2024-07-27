@@ -13,6 +13,6 @@ psql -v ON_ERROR_STOP=1 --username "dbo" --dbname "template1" <<-ESQL
     CREATE EXTENSION pgtap WITH SCHEMA pgtap;
 ESQL
 
-psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "template1" <<-ESQL
+psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<-ESQL
     ALTER ROLE dbo NOSUPERUSER;
 ESQL
