@@ -8,44 +8,14 @@ Well, because I wanted a standardized image that doesn't use a superuser (postgr
 So use it or don't! In any event, have fun, be safe and ofc "Do not run sh%& as root! :)"
 
 # How to use this image
-## Start an instance
-```
-docker run --name some-name -e POSTGRES_PASSWORD=mysecretpassword -d postgres
-```
+
+    docker run --name some-name -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+
 Now you'll have a running container named some-name, accessable via CMD
-```
-docker exec -it some-name psql -U dbo -p 5432 -d postgres -h localhost
-```
 
-## From a Dockerfile
-```
-FROM sirsplat/postgresql-pgtap:latest
-
-# Set the working directory
-WORKDIR /code
-
-# Copy initialization script
-COPY ./initdb.sh ./initdb.sh
-
-# Set the user to postgres, required to comply with scout "Default non-root User" policy
-USER postgres
-
-# Set the command to run PostgreSQL
-CMD ["postgres"]
-```
-Then execute your initdb.sh
-```
-docker exec -it some-name psql -U dbo -p 5432 -d postgres -h localhost -f /code/initdb.sh
-```
-
-## From docker-compose
-```
-Well I don't know just quite yet. Still working on mine. So will update here when I got mine functioning
-```
+    docker exec -it some-name psql -U dbo -p 5432 -d postgres -h localhost
 
 # Copyright and License
 [MIT License](./LICENSE)
-
-[Copyright](./copyright.md)
 
 [Copyright pgTAP](./copyright-pgtap.md)
