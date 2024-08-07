@@ -29,7 +29,7 @@ COPY --from=build /usr/local/share/postgresql/extension /usr/local/share/postgre
 WORKDIR /code
 
 # Copy initialization script (if any)
-COPY ./initdb.sh /docker-entrypoint-initdb.d/.
+COPY ./initdb.sh /docker-entrypoint-initdb.d/a_initdb.sh
 
 # Set the user to postgres, required to comply with scout "Default non-root User" policy
 USER postgres
