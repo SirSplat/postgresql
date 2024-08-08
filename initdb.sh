@@ -11,6 +11,10 @@ psql -v ON_ERROR_STOP=1 --username "dbo" --dbname "template1" <<-ESQL
     CREATE SCHEMA pgtap;
     COMMENT ON SCHEMA pgtap IS 'Home of all things PGTap.';
     CREATE EXTENSION pgtap WITH SCHEMA pgtap;
+
+    CREATE SCHEMA pgcrypto;
+    COMMENT ON SCHEMA pgcrypto IS 'Home of all things PGCrypto.';
+    CREATE EXTENSION pgcrypto WITH SCHEMA pgcrypto;
 ESQL
 
 psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<-ESQL
