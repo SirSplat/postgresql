@@ -19,6 +19,7 @@ So use it or don't! In any event, have fun, be safe and ofc "Do not run sh%& as 
 | pgtap   |  ✔️  |   ✔️   |          |
 | pgcrypto   |  ✔️  |       |    ✔️     |
 
+# How to use this image
 ```bash
 docker run --name some-name -e POSTGRES_PASSWORD=mysecretpassword sirsplat/database -d postgres
 ```
