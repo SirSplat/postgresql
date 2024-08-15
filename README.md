@@ -3,7 +3,7 @@
 This is a simple container built from PostgreSQL 16-alpine and a dbo role (not a superuser) created.
 
 # **These must not be confused with any official PostgreSQL images provided by PostgreSQL**
-I have only used PostgreSQL because that is the RDBMS I have the most exposure to. That and "PostgreSQL: The World's Most Advanced Open Source Relational Database", go take a gander at [PostgreSQL Documentation](https://www.postgresql.org/) if you do not believe me :)
+I have only used PostgreSQL because it is my RDBMS of choice! That and it's "The World's Most Advanced Open Source Relational Database", go take a gander at [PostgreSQL Documentation](https://www.postgresql.org/) if you do not believe me :)
 
 # Why yet another PostgreSQL Docker image?
 Well, because I wanted standardized images that do not use a superuser (postgres by default), for executing application database migrations that I could use for all my other projects.
@@ -12,12 +12,11 @@ So use it or don't! In any event, have fun, be safe and ofc "Do not run sh%& as 
 
 # Feature matrix
 
-| Version | dbo | pgTAP | pgcrypto |
-|---------|:-----:|:-------:|:----------:|
-| latest  |  ✔️  |   ✔️   |    ✔️     |
-| dbo   |  ✔️  |       |          |
-| pgtap   |  ✔️  |   ✔️   |          |
-| pgcrypto   |  ✔️  |       |    ✔️     |
+|          | latest | dbo | pgtap | pgcrypto|
+|----------|:------:|:---:|:-----:|:-------:|
+| dbo      | ✔️     | ✔️  |  ||
+| pgtap    | ✔️     |     | ✔️ ||
+| pgcrypto | ✔️     |     |  | ✔️ |
 
 # How to use this image
 ```bash
