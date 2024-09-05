@@ -17,7 +17,6 @@ So use it or don't! In any event, have fun, be safe and ofc "Do not run sh%& as 
 | dbo      | ✔️ | ✔️ |||
 | pgtap    | ✔️ || ✔️ ||
 | pgcrypto | ✔️ ||| ✔️ |
-| Template | ✔️ ||||
 
 # How to use this image
 ```bash
