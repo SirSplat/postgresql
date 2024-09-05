@@ -9,6 +9,7 @@ RUN apk add --no-cache --update \
     llvm15-dev clang15 \
     && rm -rf /var/cache/apk/* /tmp/* \
     && cpan TAP::Parser::SourceHandler::pgTAP \
+    && cpan Template \
     && git clone https://github.com/theory/pgtap.git \
     && cd pgtap \
     && make \

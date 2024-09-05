@@ -14,9 +14,10 @@ So use it or don't! In any event, have fun, be safe and ofc "Do not run sh%& as 
 
 |          | latest | dbo | pgtap | pgcrypto|
 |----------|:------:|:---:|:-----:|:-------:|
-| dbo      | ✔️     | ✔️  |  ||
-| pgtap    | ✔️     |     | ✔️ ||
-| pgcrypto | ✔️     |     |  | ✔️ |
+| dbo      | ✔️ | ✔️ |||
+| pgtap    | ✔️ || ✔️ ||
+| pgcrypto | ✔️ ||| ✔️ |
+| Template | ✔️ ||||
 
 # How to use this image
 ```bash
