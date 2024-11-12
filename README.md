@@ -1,6 +1,6 @@
 # PostgreSQL DBO Docker Image
 
-This is a simple container built from PostgreSQL 16-alpine and a dbo role (not a superuser) created.
+This is a simple container built from PostgreSQL 17-alpine and a dbo role (not a superuser) created.
 
 # **These must not be confused with any official PostgreSQL images provided by PostgreSQL**
 I have only used PostgreSQL because it is my RDBMS of choice! That and it's "The World's Most Advanced Open Source Relational Database", go take a gander at [PostgreSQL Documentation](https://www.postgresql.org/) if you do not believe me :)
