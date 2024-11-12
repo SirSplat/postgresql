@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-ARG PG_VERSION=16.3-alpine
+ARG PG_VERSION=17-alpine
 
 FROM postgres:${PG_VERSION} AS build
 

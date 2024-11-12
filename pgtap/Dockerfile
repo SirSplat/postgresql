@@ -1,6 +1,5 @@
 # Stage 1: Build stage
-ARG PG_VERSION=16.3-alpine
-ARG PGTAP_VERSION=1.3.4
+ARG PG_VERSION=17-alpine
 
 FROM postgres:${PG_VERSION} AS build
 
@@ -8,7 +7,14 @@ FROM postgres:${PG_VERSION} AS build
 RUN apk add --no-cache --update \
     postgresql-dev postgresql-contrib git openssl build-base make perl perl-dev less wget \
     llvm15-dev clang15 \
-    && rm -rf /var/cache/apk/* /tmp/* 
+    && rm -rf /var/cache/apk/* /tmp/* \
+    && cpan TAP::Parser::SourceHandler::pgTAP \
+    && git clone https://github.com/theory/pgtap.git \
+    && cd pgtap \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf pgtap
 
 # Stage 2: Final stage
 FROM postgres:${PG_VERSION}
