@@ -13,6 +13,7 @@ on:
     paths:
       - 'dbo/Dockerfile'
       - 'dbo/initdb.sh'
+  workflow_dispatch:
 
 jobs:
   build-and-push:
