@@ -32,11 +32,6 @@ jobs:
 
     strategy:
       matrix:
-        dockerfile:
-          - dbo/Dockerfile
-          - latest/Dockerfile
-          - pgcrypto/Dockerfile
-          - pgtap/Dockerfile
         directory:
           - dbo
           - latest
@@ -64,18 +59,18 @@ jobs:
     - name: Determine if build is needed
       id: check_files
       run: |
-        if [[ $(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E "${{ matrix.directory }}/Dockerfile|${{ matrix.directory }}/initdb.sh") ]]; then
-          echo "::set-output name=build::true"
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -qE "^${{ matrix.directory }}/(Dockerfile|initdb.sh)$"; then
+          echo "build=true" >> $GITHUB_ENV
         else
-          echo "::set-output name=build::false"
+          echo "build=false" >> $GITHUB_ENV
         fi
 
     - name: Build and push Docker image
-      if: steps.check_files.outputs.build == 'true'
+      if: env.build == 'true'
       uses: docker/build-push-action@v6
       with:
         context: ./${{ matrix.directory }}
-        file: ./${{ matrix.dockerfile }}
+        file: ./${{ matrix.directory }}/Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/postgresql:${{ matrix.directory }}
         platforms: linux/amd64,linux/arm64
