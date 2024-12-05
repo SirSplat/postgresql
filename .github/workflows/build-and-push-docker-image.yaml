@@ -11,6 +11,11 @@ on:
         description: 'The Docker image tag'
         required: true
         type: string
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
 
 jobs:
   build-and-push:
