@@ -17,10 +17,11 @@ on:
 
 jobs:
   build-and-push:
-    uses: ./.github/workflows/build-and-push-docker-image.yaml
+    uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@main
     with:
       directory: ./pgtap
       tag: pgtap
+      image_name: postgresql
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
