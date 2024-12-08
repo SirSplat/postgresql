@@ -1,4 +1,4 @@
-name: Shared PostgreSQL Params
+name: CI
 
 on:
   workflow_call:
@@ -26,9 +26,6 @@ on:
       DOCKER_PASSWORD:
         required: true
 
-env:
-  POSTGRES_VERSION: ${{ inputs.postgres_version }}
-
 jobs:
   build-and-push:
     uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@main
@@ -36,6 +33,7 @@ jobs:
       directory: ${{ inputs.directory }}
       tag: ${{ inputs.tag }}-${{ inputs.postgres_version }}
       image_name: postgresql
+      POSTGRES_VERSION: ${{ inputs.postgres_version }}
       generate_dockerfile: ${{ inputs.generate_dockerfile }}
       runner_debug: false
       step_debug: false
