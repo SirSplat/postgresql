@@ -1,7 +1,9 @@
 # Stage 1: Build stage
-ARG PG_VERSION=17-alpine
+ARG PG_VERSION=17
 
-FROM postgres:${PG_VERSION} AS build
+FROM postgres:${PG_VERSION}-alpine AS build
+
+LABEL version=${POSTGRES_VERSION}
 
 # Install required packages and build tools
 RUN apk add --no-cache --update \
@@ -17,7 +19,7 @@ RUN apk add --no-cache --update \
     && rm -rf pgtap
 
 # Stage 2: Final stage
-FROM postgres:${PG_VERSION}
+FROM postgres:${PG_VERSION}-alpine
 
 # Copy installed extensions from the build stage
 COPY --from=build /usr/local/lib/postgresql /usr/local/lib/postgresql

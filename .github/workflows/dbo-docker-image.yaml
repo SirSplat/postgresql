@@ -17,13 +17,14 @@ on:
 
 jobs:
   build-and-push:
-    uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@main
+    strategy:
+      matrix:
+        postgres_version: [13, 14, 15, 16, 17]
+    uses: ./.github/workflows/shared-postgresql-params.yaml
     with:
       directory: ./dbo
       tag: dbo
-      image_name: postgresql
-      runner_debug: false
-      step_debug: false
+      postgres_version: ${{ matrix.postgres_version }}
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
