@@ -22,6 +22,8 @@ jobs:
       directory: ./pgtap
       tag: pgtap
       image_name: postgresql
+      runner_debug: false
+      step_debug: false
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
