@@ -1,24 +1,22 @@
 #!/bin/bash
 
-versions=("13" "14" "15" "16" "17")
-variants=("latest" "dbo" "pgtap" "pgcrypto")
+version=$1
+variant=$2
 
-for version in "${versions[@]}"; do
-  for variant in "${variants[@]}"; do
-    dir="./${version}/${variant}"
-    mkdir -p "${dir}"
+dir="./${version}/${variant}"
+mkdir -p "${dir}"
 
-    if [[ "${variant}" == "latest" || "${variant}" == "pgtap" ]]; then
-      template="Dockerfile_with_pgtap"
-    else
-      template="Dockerfile_without_pgtap"
-    fi
+if [[ "${variant}" == "latest" || "${variant}" == "pgtap" ]]; then
+  template="Dockerfile_with_pgtap"
+else
+  template="Dockerfile_without_pgtap"
+fi
 
-    # Replace the placeholder with the actual version
-    sed "s/ARG PG_VERSION=17/ARG PG_VERSION=${version}/" ${template} > "${dir}/Dockerfile"
+# Replace the placeholder with the actual version
+sed "s/ARG PG_VERSION=17/ARG PG_VERSION=${version}/" ${template} > "${dir}/Dockerfile"
 
-    # Generate initdb.sh script
-    cat <<EOF > "${dir}/initdb.sh"
+# Generate initdb.sh script
+cat <<EOF > "${dir}/initdb.sh"
 #!/bin/bash
 set -e
 
@@ -34,8 +32,8 @@ psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<-ESQL
 ESQL
 EOF
 
-    if [[ "${variant}" == "latest" || "${variant}" == "pgtap" ]]; then
-      cat <<EOF >> "${dir}/initdb.sh"
+if [[ "${variant}" == "latest" || "${variant}" == "pgtap" ]]; then
+  cat <<EOF >> "${dir}/initdb.sh"
 
 psql -v ON_ERROR_STOP=1 --username "dbo" --dbname "template1" <<-ESQL
     CREATE SCHEMA pgtap;
@@ -43,10 +41,10 @@ psql -v ON_ERROR_STOP=1 --username "dbo" --dbname "template1" <<-ESQL
     CREATE EXTENSION pgtap WITH SCHEMA pgtap;
 ESQL
 EOF
-    fi
+fi
 
-    if [[ "${variant}" == "latest" || "${variant}" == "pgcrypto" ]]; then
-      cat <<EOF >> "${dir}/initdb.sh"
+if [[ "${variant}" == "latest" || "${variant}" == "pgcrypto" ]]; then
+  cat <<EOF >> "${dir}/initdb.sh"
 
 psql -v ON_ERROR_STOP=1 --username "dbo" --dbname "template1" <<-ESQL
     CREATE SCHEMA pgcrypto;
@@ -54,14 +52,11 @@ psql -v ON_ERROR_STOP=1 --username "dbo" --dbname "template1" <<-ESQL
     CREATE EXTENSION pgcrypto WITH SCHEMA pgcrypto;
 ESQL
 EOF
-    fi
+fi
 
-    cat <<EOF >> "${dir}/initdb.sh"
+cat <<EOF >> "${dir}/initdb.sh"
 
 psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<-ESQL
     ALTER ROLE dbo NOSUPERUSER;
 ESQL
 EOF
-
-  done
-done

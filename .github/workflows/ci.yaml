@@ -18,10 +18,6 @@ on:
         description: 'The Docker image tag'
         required: true
         type: string
-      postgres_version:
-        description: 'The PostgreSQL version'
-        required: true
-        type: string
       generate_dockerfile:
         description: 'Run generate_dockerfile_initdb.sh script'
         required: false
@@ -35,16 +31,20 @@ on:
 
 jobs:
   build-and-push:
+    strategy:
+      matrix:
+        postgres_version: [12, 13, 14, 15, 16, 17]
+        variant: [dbo, pgtap, pgcrypto, latest]
     uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@main
     with:
       directory: ${{ inputs.directory }}
-      tag: ${{ inputs.tag }}-${{ inputs.postgres_version }}
+      tag: ${{ inputs.tag }}-${{ matrix.postgres_version }}-${{ matrix.variant }}
       image_name: postgresql
-      POSTGRES_VERSION: ${{ inputs.postgres_version }}
+      postgres_version: ${{ matrix.postgres_version }}
+      variant: ${{ matrix.variant }}
       generate_dockerfile: ${{ inputs.generate_dockerfile }}
       runner_debug: false
       step_debug: false
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-
