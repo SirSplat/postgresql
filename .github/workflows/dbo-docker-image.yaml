@@ -1,0 +1,29 @@
+name: Build and Push dbo Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dbo/Dockerfile'
+      - 'dbo/initdb.sh'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'dbo/Dockerfile'
+      - 'dbo/initdb.sh'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@main
+    with:
+      directory: ./dbo
+      tag: dbo
+      image_name: postgresql
+      runner_debug: false
+      step_debug: false
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
