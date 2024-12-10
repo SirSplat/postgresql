@@ -13,15 +13,21 @@ on:
     paths:
       - 'pgcrypto/Dockerfile'
       - 'pgcrypto/initdb.sh'
+  # Manually trigger the workflow from the Actions tab
   workflow_dispatch:
+  # Schedule the workflow to run every Sunday at midnight
+  schedule:
+    - cron: '0 0 * * 0'
 
 jobs:
   build-and-push:
+    # Make use of the shared workflow
     uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@main
     with:
       directory: ./pgcrypto
       tag: pgcrypto
       image_name: postgresql
+      # Optional flags to enable workflow and step debugging
       runner_debug: false
       step_debug: false
     secrets:
