@@ -3,7 +3,7 @@
 This is a simple container built from PostgreSQL 17-alpine and a dbo role (not a superuser) created.
 
 # **These must not be confused with any official PostgreSQL images provided by PostgreSQL**
-I have only used PostgreSQL because it is my RDBMS of choice! That and it's "The World's Most Advanced Open Source Relational Database", go take a gander at [PostgreSQL Documentation](https://www.postgresql.org/) if you do not believe me :)
+I have used PostgreSQL because it is my RDBMS of choice! That and it's "The World's Most Advanced Open Source Relational Database", go take a gander at [PostgreSQL Documentation](https://www.postgresql.org/) if you want to see for yourself. :)
 
 # Why yet another PostgreSQL Docker image?
 Well, because I wanted standardized images that do not use a superuser (postgres by default), for executing application database migrations that I could use for all my other projects.
@@ -11,7 +11,6 @@ Well, because I wanted standardized images that do not use a superuser (postgres
 So use it or don't! In any event, have fun, be safe and ofc "Do not run sh%& as root! :)"
 
 # Feature matrix
-
 |          | latest | dbo | pgtap | pgcrypto|
 |----------|:------:|:---:|:-----:|:-------:|
 | dbo      | ✔️ | ✔️ | ✔️ | ✔️ |
