@@ -1,7 +1,8 @@
 # Stage 1: Build stage
-ARG PG_VERSION=17-alpine
+ARG PG_MAJOR=18
+ARG PG_VARIANT=alpine
 
-FROM postgres:${PG_VERSION} AS build
+FROM postgres:${PG_MAJOR}-${PG_VARIANT} AS build
 
 # Install required packages and build tools
 RUN apk add --no-cache --update \
@@ -10,7 +11,9 @@ RUN apk add --no-cache --update \
     && rm -rf /var/cache/apk/* /tmp/*
 
 # Stage 2: Final stage
-FROM postgres:${PG_VERSION}
+ARG PG_MAJOR=18
+ARG PG_VARIANT=alpine
+FROM postgres:${PG_MAJOR}-${PG_VARIANT}
 
 # Copy installed extensions from the build stage
 COPY --from=build /usr/local/lib/postgresql /usr/local/lib/postgresql
