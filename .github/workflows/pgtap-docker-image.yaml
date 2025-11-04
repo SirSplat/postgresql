@@ -26,20 +26,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - pg_major: '13'
-            is_default: 'false'
-          - pg_major: '14'
-            is_default: 'false'
-          - pg_major: '15'
-            is_default: 'false'
-          - pg_major: '16'
-            is_default: 'false'
-          - pg_major: '17'
-            is_default: 'false'
-          - pg_major: '18'
-            is_default: 'true'
+          - pg_major: 13
+            is_default: false
+          - pg_major: 14
+            is_default: false
+          - pg_major: 15
+            is_default: false
+          - pg_major: 16
+            is_default: false
+          - pg_major: 17
+            is_default: false
+          - pg_major: 18
+            is_default: true
     env:
-      IMAGE_NAME: sirsplat/postgresql
+      REGISTRY: docker.io
+      IMAGE_NAME: postgresql
       DIRECTORY: ./pgtap
       TAG_PREFIX: pgtap
     steps:
@@ -63,7 +64,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=${{ env.TAG_PREFIX }}-pg${{ matrix.pg_major }}
             type=raw,value=${{ env.TAG_PREFIX }},enable=${{ matrix.is_default }}
@@ -81,3 +82,16 @@ jobs:
             PG_VARIANT=alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      - name: Verify published tags
+        if: github.event_name != 'pull_request'
+        run: |
+          tags="${{ steps.meta.outputs.tags }}"
+          if [ -z "$tags" ]; then
+            echo "metadata action returned no tags"
+            exit 1
+          fi
+          printf '%s\n' "$tags" | while IFS= read -r image; do
+            [ -z "$image" ] && continue
+            echo "Verifying ${image}"
+            docker buildx imagetools inspect "$image" > /dev/null
+          done
