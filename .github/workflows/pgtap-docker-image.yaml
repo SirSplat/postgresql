@@ -67,6 +67,8 @@ jobs:
           tags: |
             type=raw,value=${{ env.TAG_PREFIX }}-pg${{ matrix.pg_major }}
             type=raw,value=${{ env.TAG_PREFIX }},enable=${{ matrix.is_default }}
+          labels: |
+            org.opencontainers.image.description=PostgreSQL ${{ matrix.pg_major }} on Alpine with pgTAP installed and the dbo application role
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
