@@ -11,6 +11,8 @@ RUN apk add --no-cache --update \
     && rm -rf /var/cache/apk/* /tmp/*
 
 # Stage 2: Final stage
+ARG PG_MAJOR=18
+ARG PG_VARIANT=alpine
 FROM postgres:${PG_MAJOR}-${PG_VARIANT}
 
 # Copy installed extensions from the build stage
