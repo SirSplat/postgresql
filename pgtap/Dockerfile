@@ -4,16 +4,19 @@ ARG PG_VARIANT=alpine
 
 FROM postgres:${PG_MAJOR}-${PG_VARIANT} AS build
 
-# Install required packages and build tools
-RUN apk add --no-cache --update \
-    postgresql-dev postgresql-contrib git openssl build-base make perl perl-dev less wget \
+# Install required packages and build tools.  Use the pg_config bundled with the
+# upstream postgres image so pgTAP builds against the same server version; the
+# postgresql-dev package provided by Alpine only includes headers for the
+# latest release and would produce incompatible binaries for older majors.
+RUN set -eux; \
+    apk add --no-cache --update git openssl build-base make perl perl-dev less wget \
     llvm15-dev clang15 \
     && rm -rf /var/cache/apk/* /tmp/* \
     && cpan TAP::Parser::SourceHandler::pgTAP \
     && git clone https://github.com/theory/pgtap.git \
     && cd pgtap \
-    && make \
-    && make install \
+    && make PG_CONFIG=/usr/local/bin/pg_config \
+    && make install PG_CONFIG=/usr/local/bin/pg_config \
     && cd .. \
     && rm -rf pgtap
 
