@@ -16,10 +16,12 @@ Each image variant is published for PostgreSQL major versions 13 through 18. Tag
 
 | Variant  | Default tag | Additional tags |
 |----------|-------------|-----------------|
-| latest   | `latest` → PostgreSQL 18 | `latest-pg13`, `latest-pg14`, `latest-pg15`, `latest-pg16`, `latest-pg17` |
-| dbo      | `dbo` → PostgreSQL 18 | `dbo-pg13`, `dbo-pg14`, `dbo-pg15`, `dbo-pg16`, `dbo-pg17` |
-| pgtap    | `pgtap` → PostgreSQL 18 | `pgtap-pg13`, `pgtap-pg14`, `pgtap-pg15`, `pgtap-pg16`, `pgtap-pg17` |
-| pgcrypto | `pgcrypto` → PostgreSQL 18 | `pgcrypto-pg13`, `pgcrypto-pg14`, `pgcrypto-pg15`, `pgcrypto-pg16`, `pgcrypto-pg17` |
+| latest   | `latest` → PostgreSQL 18 | `latest-pg13`, `latest-pg14`, `latest-pg15`, `latest-pg16`, `latest-pg17`, `latest-pg18` |
+| dbo      | `dbo` → PostgreSQL 18 | `dbo-pg13`, `dbo-pg14`, `dbo-pg15`, `dbo-pg16`, `dbo-pg17`, `dbo-pg18` |
+| pgtap    | `pgtap` → PostgreSQL 18 | `pgtap-pg13`, `pgtap-pg14`, `pgtap-pg15`, `pgtap-pg16`, `pgtap-pg17`, `pgtap-pg18` |
+| pgcrypto | `pgcrypto` → PostgreSQL 18 | `pgcrypto-pg13`, `pgcrypto-pg14`, `pgcrypto-pg15`, `pgcrypto-pg16`, `pgcrypto-pg17`, `pgcrypto-pg18` |
+
+Scheduled, manual, and branch builds on `main` publish these tags to Docker Hub. Pull request runs build the images for validation but skip the registry login and push steps by design, so no tags are published from PR validation jobs.
 
 # How to use this image
 ```bash
