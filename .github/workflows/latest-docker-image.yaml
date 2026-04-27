@@ -43,9 +43,12 @@ jobs:
       IMAGE_NAME: postgresql
       DIRECTORY: ./latest
       TAG_PREFIX: latest
+      # Opt every JavaScript action into Node.js 24 ahead of GitHub's
+      # 2026-06-02 enforcement; removes the Node 20 deprecation annotation.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -80,7 +83,7 @@ jobs:
             type=raw,value=${{ env.TAG_PREFIX }}-pg${{ matrix.pg_major }}
             type=raw,value=${{ env.TAG_PREFIX }},enable=${{ matrix.is_default }}
           labels: |
-            org.opencontainers.image.description=PostgreSQL ${{ matrix.pg_major }} on Alpine with pgTAP and pgcrypto installed plus the dbo application role
+            org.opencontainers.image.description=PostgreSQL ${{ matrix.pg_major }} on Alpine with pgTAP, pgcrypto, and pgvector installed plus the dbo application role
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

@@ -6,20 +6,16 @@ FROM postgres:${PG_MAJOR}-${PG_VARIANT} AS build
 
 # Detect the LLVM major the bundled PostgreSQL was built against (parsed from
 # pg_config --configure) and install matching clang/llvm-dev plus a minimal
-# build toolchain. pgcrypto is shipped as a contrib extension by the upstream
-# postgres image and needs no compilation; pgTAP and pgvector are built here.
+# build toolchain. Avoids:
+#   - Hard-coded LLVM/clang versions that age out of Alpine repos.
+#   - Alpine's postgresql-dev package, whose headers only match the *latest*
+#     PG release and would link extensions against the wrong server version.
 RUN set -eux; \
-    apk add --no-cache git build-base perl; \
+    apk add --no-cache git build-base; \
     LLVM_PKG="$(/usr/local/bin/pg_config --configure | grep -oE 'llvm[0-9]+' | head -n1)"; \
     if [ -n "$LLVM_PKG" ]; then \
         apk add --no-cache "clang${LLVM_PKG#llvm}" "${LLVM_PKG}-dev"; \
     fi; \
-    git clone --depth 1 https://github.com/theory/pgtap.git; \
-    cd pgtap; \
-    make PG_CONFIG=/usr/local/bin/pg_config; \
-    make install PG_CONFIG=/usr/local/bin/pg_config; \
-    cd ..; \
-    rm -rf pgtap; \
     git clone --branch v0.8.2 --depth 1 https://github.com/pgvector/pgvector.git; \
     cd pgvector; \
     make PG_CONFIG=/usr/local/bin/pg_config; \

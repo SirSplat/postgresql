@@ -7,7 +7,7 @@ psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<-ESQL
     GRANT pg_read_server_files, pg_read_all_settings TO dbo;
 
     GRANT CONNECT ON DATABASE postgres TO dbo;
-    
+
     REVOKE ALL ON DATABASE postgres FROM public;
     REVOKE ALL ON SCHEMA public FROM public;
 ESQL
@@ -20,6 +20,10 @@ psql -v ON_ERROR_STOP=1 --username "dbo" --dbname "template1" <<-ESQL
     CREATE SCHEMA pgcrypto;
     COMMENT ON SCHEMA pgcrypto IS 'Home of all things PGCrypto.';
     CREATE EXTENSION pgcrypto WITH SCHEMA pgcrypto;
+
+    CREATE SCHEMA pgvector;
+    COMMENT ON SCHEMA pgvector IS 'Home of all things pgvector.';
+    CREATE EXTENSION vector WITH SCHEMA pgvector;
 ESQL
 
 psql -v ON_ERROR_STOP=1 --username "postgres" --dbname "postgres" <<-ESQL

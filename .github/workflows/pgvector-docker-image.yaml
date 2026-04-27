@@ -1,18 +1,18 @@
-name: Build and Push pgtap Docker Image
+name: Build and Push pgvector Docker Image
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'pgtap/Dockerfile'
-      - 'pgtap/initdb.sh'
+      - 'pgvector/Dockerfile'
+      - 'pgvector/initdb.sh'
   pull_request:
     branches:
       - main
     paths:
-      - 'pgtap/Dockerfile'
-      - 'pgtap/initdb.sh'
+      - 'pgvector/Dockerfile'
+      - 'pgvector/initdb.sh'
   # Manually trigger the workflow from the Actions tab
   workflow_dispatch:
   # Schedule the workflow to run every Sunday at midnight
@@ -41,8 +41,8 @@ jobs:
     env:
       REGISTRY: docker.io
       IMAGE_NAME: postgresql
-      DIRECTORY: ./pgtap
-      TAG_PREFIX: pgtap
+      DIRECTORY: ./pgvector
+      TAG_PREFIX: pgvector
       # Opt every JavaScript action into Node.js 24 ahead of GitHub's
       # 2026-06-02 enforcement; removes the Node 20 deprecation annotation.
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -83,7 +83,7 @@ jobs:
             type=raw,value=${{ env.TAG_PREFIX }}-pg${{ matrix.pg_major }}
             type=raw,value=${{ env.TAG_PREFIX }},enable=${{ matrix.is_default }}
           labels: |
-            org.opencontainers.image.description=PostgreSQL ${{ matrix.pg_major }} on Alpine with pgTAP installed and the dbo application role
+            org.opencontainers.image.description=PostgreSQL ${{ matrix.pg_major }} on Alpine with pgvector installed and the dbo application role
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

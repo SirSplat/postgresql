@@ -43,9 +43,12 @@ jobs:
       IMAGE_NAME: postgresql
       DIRECTORY: ./pgcrypto
       TAG_PREFIX: pgcrypto
+      # Opt every JavaScript action into Node.js 24 ahead of GitHub's
+      # 2026-06-02 enforcement; removes the Node 20 deprecation annotation.
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

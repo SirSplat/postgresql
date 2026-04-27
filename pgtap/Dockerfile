@@ -4,39 +4,38 @@ ARG PG_VARIANT=alpine
 
 FROM postgres:${PG_MAJOR}-${PG_VARIANT} AS build
 
-# Install required packages and build tools.  Use the pg_config bundled with the
-# upstream postgres image so pgTAP builds against the same server version; the
-# postgresql-dev package provided by Alpine only includes headers for the
-# latest release and would produce incompatible binaries for older majors.
+# Detect the LLVM major the bundled PostgreSQL was built against (parsed from
+# pg_config --configure) and install matching clang/llvm-dev plus a minimal
+# build toolchain. Avoids:
+#   - Hard-coded LLVM/clang versions that age out of Alpine repos.
+#   - Alpine's postgresql-dev package, whose headers only match the *latest*
+#     PG release and would link extensions against the wrong server version.
 RUN set -eux; \
-    apk add --no-cache --update git openssl build-base make perl perl-dev less wget \
-    llvm15-dev clang15 \
-    && rm -rf /var/cache/apk/* /tmp/* \
-    && cpan TAP::Parser::SourceHandler::pgTAP \
-    && git clone https://github.com/theory/pgtap.git \
-    && cd pgtap \
-    && make PG_CONFIG=/usr/local/bin/pg_config \
-    && make install PG_CONFIG=/usr/local/bin/pg_config \
-    && cd .. \
-    && rm -rf pgtap
+    apk add --no-cache git build-base perl; \
+    LLVM_PKG="$(/usr/local/bin/pg_config --configure | grep -oE 'llvm[0-9]+' | head -n1)"; \
+    if [ -n "$LLVM_PKG" ]; then \
+        apk add --no-cache "clang${LLVM_PKG#llvm}" "${LLVM_PKG}-dev"; \
+    fi; \
+    git clone --depth 1 https://github.com/theory/pgtap.git; \
+    cd pgtap; \
+    make PG_CONFIG=/usr/local/bin/pg_config; \
+    make install PG_CONFIG=/usr/local/bin/pg_config; \
+    cd ..; \
+    rm -rf pgtap
 
 # Stage 2: Final stage
 ARG PG_MAJOR=18
 ARG PG_VARIANT=alpine
 FROM postgres:${PG_MAJOR}-${PG_VARIANT}
 
-# Copy installed extensions from the build stage
 COPY --from=build /usr/local/lib/postgresql /usr/local/lib/postgresql
 COPY --from=build /usr/local/share/postgresql/extension /usr/local/share/postgresql/extension
 
-# Set the working directory
 WORKDIR /code
 
-# Copy initialization script (if any)
 COPY ./initdb.sh /docker-entrypoint-initdb.d/a_initdb.sh
 
 # Set the user to postgres, required to comply with scout "Default non-root User" policy
 USER postgres
 
-# Set the command to run PostgreSQL
 CMD ["postgres"]

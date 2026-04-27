@@ -19,15 +19,17 @@ environment variable when starting the container.
 
 | Variant   | Includes                                                                 |
 |-----------|--------------------------------------------------------------------------|
-| `latest`  | Baseline PostgreSQL image with the `dbo` role configured.                 |
-| `dbo`     | Identical to `latest`; published separately for clarity and pinning.      |
+| `latest`  | `dbo` role plus the [pgTAP](https://pgtap.org/), `pgcrypto`, and [pgvector](https://github.com/pgvector/pgvector) (as the `vector` extension) extensions, each in their dedicated schemas. |
+| `dbo`     | Baseline PostgreSQL image with only the `dbo` role configured.            |
 | `pgtap`   | Pre-installed [pgTAP](https://pgtap.org/) extension in the `pgtap` schema.|
 | `pgcrypto`| Pre-installed `pgcrypto` extension in the `pgcrypto` schema.              |
+| `pgvector`| Pre-installed [pgvector](https://github.com/pgvector/pgvector) extension (`vector`) in the `pgvector` schema. |
 
 All images revoke default access from the `public` schema and grant
-`dbo` the ability to connect to the default `postgres` database. The `pgtap`
-and `pgcrypto` variants temporarily elevate `dbo` during initialization to
-install their respective extensions before dropping superuser privileges again.
+`dbo` the ability to connect to the default `postgres` database. The `latest`,
+`pgtap`, `pgcrypto`, and `pgvector` variants temporarily elevate `dbo` during
+initialization to install their respective extensions before dropping
+superuser privileges again.
 
 ## Supported PostgreSQL versions
 
@@ -40,6 +42,7 @@ follow the pattern `<variant>-pg<version>`.
 | dbo      | `dbo` → PostgreSQL 18 | `dbo-pg13`, `dbo-pg14`, `dbo-pg15`, `dbo-pg16`, `dbo-pg17`, `dbo-pg18` |
 | pgtap    | `pgtap` → PostgreSQL 18 | `pgtap-pg13`, `pgtap-pg14`, `pgtap-pg15`, `pgtap-pg16`, `pgtap-pg17`, `pgtap-pg18` |
 | pgcrypto | `pgcrypto` → PostgreSQL 18 | `pgcrypto-pg13`, `pgcrypto-pg14`, `pgcrypto-pg15`, `pgcrypto-pg16`, `pgcrypto-pg17`, `pgcrypto-pg18` |
+| pgvector | `pgvector` → PostgreSQL 18 | `pgvector-pg13`, `pgvector-pg14`, `pgvector-pg15`, `pgvector-pg16`, `pgvector-pg17`, `pgvector-pg18` |
 
 Builds on the `main` branch publish these tags to Docker Hub. Pull requests run
 full builds for validation but skip the registry login and push steps, so no tags
@@ -65,8 +68,10 @@ docker exec -it some-name psql -U dbo -h localhost -p 5432 -d postgres
 * **Persist data:** mount a volume at `/var/lib/postgresql/data` or use Docker
   named volumes so that data outlives the container lifecycle.
 * **Enable extensions:** connect as `dbo` (or another privileged role) and run
-  standard `CREATE EXTENSION` commands—`pgcrypto` and `pgtap` are already
-  installed in their dedicated schemas when using those variants.
+  standard `CREATE EXTENSION` commands. The `latest` variant includes
+  `pgtap`, `pgcrypto`, and `pgvector` (as the `vector` extension) all
+  pre-installed in dedicated schemas; the single-extension variants
+  (`pgtap`, `pgcrypto`, `pgvector`) install just their named extension.
 
 ## Copyright and License
 
