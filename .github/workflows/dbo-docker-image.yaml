@@ -45,18 +45,15 @@ jobs:
       IMAGE_NAME: postgresql
       DIRECTORY: ./dbo
       TAG_PREFIX: dbo
-      # Opt every JavaScript action into Node.js 24 ahead of GitHub's
-      # 2026-06-02 enforcement; removes the Node 20 deprecation annotation.
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Validate Docker Hub credentials
         if: github.event_name != 'pull_request'
@@ -71,14 +68,14 @@ jobs:
 
       - name: Log in to Docker Hub
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Docker metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -88,7 +85,7 @@ jobs:
             org.opencontainers.image.description=PostgreSQL ${{ matrix.pg_major }} on Alpine with the dbo application role pre-created as a non-superuser
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ${{ env.DIRECTORY }}
           platforms: linux/amd64,linux/arm64
