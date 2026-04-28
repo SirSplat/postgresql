@@ -19,7 +19,7 @@ on:
 
 jobs:
   build-and-push:
-    uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@fix-cache-to-on-pr-builds
+    uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@main
     with:
       directory: ./dbo
       image_name: postgresql
