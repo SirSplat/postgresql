@@ -2,155 +2,36 @@ name: Build and Push pgtap Docker Image
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'pgtap/Dockerfile'
       - 'pgtap/initdb.sh'
       - '.github/workflows/pgtap-docker-image.yaml'
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'pgtap/Dockerfile'
       - 'pgtap/initdb.sh'
       - '.github/workflows/pgtap-docker-image.yaml'
-  # Manually trigger the workflow from the Actions tab
   workflow_dispatch:
-  # Schedule the workflow to run every Sunday at midnight
   schedule:
     - cron: '0 0 * * 0'
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - pg_major: 13
-            is_default: false
-          - pg_major: 14
-            is_default: false
-          - pg_major: 15
-            is_default: false
-          - pg_major: 16
-            is_default: false
-          - pg_major: 17
-            is_default: false
-          - pg_major: 18
-            is_default: true
-    env:
-      REGISTRY: docker.io
-      IMAGE_NAME: postgresql
-      DIRECTORY: ./pgtap
-      TAG_PREFIX: pgtap
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Validate Docker Hub credentials
-        if: github.event_name != 'pull_request'
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          if [ -z "$DOCKER_USERNAME" ] || [ -z "$DOCKER_PASSWORD" ]; then
-            echo 'Docker Hub credentials are not configured.'
-            exit 1
-          fi
-
-      - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v4
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ env.REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ env.TAG_PREFIX }}-pg${{ matrix.pg_major }}
-            type=raw,value=${{ env.TAG_PREFIX }},enable=${{ matrix.is_default }}
-          labels: |
-            org.opencontainers.image.description=PostgreSQL ${{ matrix.pg_major }} on Alpine with pgTAP installed and the dbo application role
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v7
-        with:
-          context: ${{ env.DIRECTORY }}
-          platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
-          build-args: |
-            PG_MAJOR=${{ matrix.pg_major }}
-            PG_VARIANT=alpine
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          provenance: mode=max
-          sbom: true
-      - name: Verify published tags
-        if: github.event_name != 'pull_request'
-        run: |
-          tags="${{ steps.meta.outputs.tags }}"
-          if [ -z "$tags" ]; then
-            echo "metadata action returned no tags"
-            exit 1
-          fi
-          printf '%s\n' "$tags" | while IFS= read -r image; do
-            [ -z "$image" ] && continue
-            echo "Verifying ${image}"
-            docker buildx imagetools inspect "$image" > /dev/null
-          done
-
-      - name: Report build status to status gist
-        if: always() && github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GIST_TOKEN }}
-          GIST_ID: ${{ vars.STATUS_GIST_ID }}
-          VARIANT: ${{ env.TAG_PREFIX }}
-          PG: ${{ matrix.pg_major }}
-          OUTCOME: ${{ job.status }}
-        run: |
-          set -e
-          if [ -z "$GH_TOKEN" ] || [ -z "$GIST_ID" ]; then
-            echo "GIST_TOKEN secret or STATUS_GIST_ID variable not set; skipping status report."
-            exit 0
-          fi
-          case "$OUTCOME" in
-            success)   MSG=passing;   COLOR=brightgreen ;;
-            cancelled) MSG=cancelled; COLOR=lightgrey ;;
-            *)         MSG=failing;   COLOR=red ;;
-          esac
-          STATUS_JSON=$(jq -n \
-            --arg label "pg${PG}" \
-            --arg msg "$MSG" \
-            --arg color "$COLOR" \
-            '{schemaVersion:1, label:$label, message:$msg, color:$color}')
-          PAYLOAD=$(jq -n \
-            --arg fname "${VARIANT}-pg${PG}.json" \
-            --arg content "$STATUS_JSON" \
-            '{files: {($fname): {content: $content}}}')
-          # The gist API serialises writes; concurrent matrix legs all
-          # PATCHing the same gist trigger HTTP 409. Retry with backoff
-          # plus jitter. A persistent failure here is non-fatal: the
-          # Docker build outcome is the real CI signal, the gist is just
-          # a metadata side channel.
-          for attempt in 1 2 3 4 5 6 7 8; do
-            if echo "$PAYLOAD" | gh api -X PATCH "gists/$GIST_ID" --input -; then
-              exit 0
-            fi
-            SLEEP_S=$((attempt * 3 + RANDOM % 5))
-            echo "Gist update attempt ${attempt}/8 failed (likely 409 from a concurrent matrix leg); retrying in ${SLEEP_S}s..."
-            sleep "$SLEEP_S"
-          done
-          echo "::warning::Gist status update still failing after 8 attempts; badge may be stale. Build outcome was: ${OUTCOME}."
-          exit 0
+    uses: SirSplat/workflows/.github/workflows/build-and-push-docker-image.yaml@main
+    with:
+      directory: ./pgtap
+      image_name: postgresql
+      tag_prefix: pgtap
+      pg_major_matrix: '["13","14","15","16","17","18"]'
+      default_pg_major: '18'
+      build_args: |
+        PG_VARIANT=alpine
+      image_description: 'PostgreSQL on Alpine with pgTAP installed and the dbo application role'
+      push_on_pull_request: false
+      status_gist_id: ${{ vars.STATUS_GIST_ID }}
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
