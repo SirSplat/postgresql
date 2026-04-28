@@ -89,8 +89,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ${{ env.DIRECTORY }}
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          load: ${{ github.event_name == 'pull_request' }}
           build-args: |
             PG_MAJOR=${{ matrix.pg_major }}
             PG_VARIANT=alpine
