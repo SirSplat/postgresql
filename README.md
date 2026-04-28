@@ -33,9 +33,9 @@ environment variable when starting the container.
 |-----------|--------------------------------------------------------------------------|
 | `latest`  | `dbo` role plus the [pgTAP](https://pgtap.org/), `pgcrypto`, and [pgvector](https://github.com/pgvector/pgvector) (as the `vector` extension) extensions, each in their dedicated schemas. |
 | `dbo`     | Baseline PostgreSQL image with only the `dbo` role configured.            |
-| `pgtap`   | Pre-installed [pgTAP](https://pgtap.org/) extension in the `pgtap` schema.|
-| `pgcrypto`| Pre-installed `pgcrypto` extension in the `pgcrypto` schema.              |
-| `pgvector`| Pre-installed [pgvector](https://github.com/pgvector/pgvector) extension (`vector`) in the `pgvector` schema. |
+| `pgtap`   | `dbo` role plus the pre-installed [pgTAP](https://pgtap.org/) extension in the `pgtap` schema. |
+| `pgcrypto`| `dbo` role plus the pre-installed `pgcrypto` extension in the `pgcrypto` schema. |
+| `pgvector`| `dbo` role plus the pre-installed [pgvector](https://github.com/pgvector/pgvector) extension (`vector`) in the `pgvector` schema. |
 
 All images revoke default access from the `public` schema and grant
 `dbo` the ability to connect to the default `postgres` database. The `latest`,
