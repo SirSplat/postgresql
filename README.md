@@ -87,5 +87,5 @@ docker exec -it some-name psql -U dbo -h localhost -p 5432 -d postgres
 
 ## Copyright and License
 
-* [MIT License](./LICENSE)
-* [Copyright pgTAP](./copyright-pgtap.md)
+* [MIT License](https://github.com/SirSplat/postgresql/blob/main/LICENSE)
+* [Copyright pgTAP](https://github.com/SirSplat/postgresql/blob/main/copyright-pgtap.md)
