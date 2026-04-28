@@ -109,3 +109,33 @@ jobs:
             echo "Verifying ${image}"
             docker buildx imagetools inspect "$image" > /dev/null
           done
+
+      - name: Report build status to status gist
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GIST_TOKEN }}
+          GIST_ID: ${{ vars.STATUS_GIST_ID }}
+          VARIANT: ${{ env.TAG_PREFIX }}
+          PG: ${{ matrix.pg_major }}
+          OUTCOME: ${{ job.status }}
+        run: |
+          set -e
+          if [ -z "$GH_TOKEN" ] || [ -z "$GIST_ID" ]; then
+            echo "GIST_TOKEN secret or STATUS_GIST_ID variable not set; skipping status report."
+            exit 0
+          fi
+          case "$OUTCOME" in
+            success)   MSG=passing;   COLOR=brightgreen ;;
+            cancelled) MSG=cancelled; COLOR=lightgrey ;;
+            *)         MSG=failing;   COLOR=red ;;
+          esac
+          STATUS_JSON=$(jq -n \
+            --arg label "pg${PG}" \
+            --arg msg "$MSG" \
+            --arg color "$COLOR" \
+            '{schemaVersion:1, label:$label, message:$msg, color:$color}')
+          jq -n \
+            --arg fname "${VARIANT}-pg${PG}.json" \
+            --arg content "$STATUS_JSON" \
+            '{files: {($fname): {content: $content}}}' \
+          | gh api -X PATCH "gists/$GIST_ID" --input -
