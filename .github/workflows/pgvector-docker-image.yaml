@@ -7,12 +7,14 @@ on:
     paths:
       - 'pgvector/Dockerfile'
       - 'pgvector/initdb.sh'
+      - '.github/workflows/pgvector-docker-image.yaml'
   pull_request:
     branches:
       - main
     paths:
       - 'pgvector/Dockerfile'
       - 'pgvector/initdb.sh'
+      - '.github/workflows/pgvector-docker-image.yaml'
   # Manually trigger the workflow from the Actions tab
   workflow_dispatch:
   # Schedule the workflow to run every Sunday at midnight

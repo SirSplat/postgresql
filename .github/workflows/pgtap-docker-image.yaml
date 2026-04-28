@@ -7,12 +7,14 @@ on:
     paths:
       - 'pgtap/Dockerfile'
       - 'pgtap/initdb.sh'
+      - '.github/workflows/pgtap-docker-image.yaml'
   pull_request:
     branches:
       - main
     paths:
       - 'pgtap/Dockerfile'
       - 'pgtap/initdb.sh'
+      - '.github/workflows/pgtap-docker-image.yaml'
   # Manually trigger the workflow from the Actions tab
   workflow_dispatch:
   # Schedule the workflow to run every Sunday at midnight
