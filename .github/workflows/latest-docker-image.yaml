@@ -96,6 +96,8 @@ jobs:
             PG_VARIANT=alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
       - name: Verify published tags
         if: github.event_name != 'pull_request'
         run: |
