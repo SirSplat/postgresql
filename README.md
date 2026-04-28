@@ -46,7 +46,12 @@ superuser privileges again.
 ## Supported PostgreSQL versions
 
 Each variant is published for PostgreSQL major versions 13 through 18. Tags
-follow the pattern `<variant>-pg<version>`.
+follow the pattern `<variant>-pg<version>`. Every published tag is a
+multi-architecture manifest covering `linux/amd64` and `linux/arm64`.
+
+> **Note:** Tags reflect the most recent successful CI build for each variant.
+> During the few minutes after a workflow change merges, the published
+> manifests may briefly lag the source until CI rebuilds.
 
 | Variant  | Default tag | Additional tags |
 |----------|-------------|-----------------|
