@@ -1,0 +1,118 @@
+# .github/workflows/prune-artifacts.yml
+#
+# task #1009 — scheduled artifact-prune sweep for SirSplat/postgresql.
+#
+# Mirrors the GOAPDemo prune sweep shipped under task #1008 (PR #186,
+# f149fa6) and adapts it to this repo's runner posture + artifact profile.
+#
+# WHY THIS EXISTS (validated 2026-05-21 during #1009):
+#   The account-wide artifact survey done for #1008 found postgresql was
+#   the dominant standing consumer: 524 artifacts / ~39 MB, by FAR the most
+#   by count of any SirSplat repo. They are all `*.dockerbuild` build-record
+#   artifacts auto-uploaded by docker/build-push-action on every Docker
+#   image build (the matrix builds 6 PG majors x several image variants on
+#   push + PR + a weekly cron, so the count compounds fast). None carried an
+#   explicit retention-days, so they aged on GitHub's 90-day default and
+#   accumulated unbounded.
+#
+#   High standing artifact COUNT is the precondition for the Actions
+#   storage-quota recalc-LAG ghost that hit GOAPDemo run 26242337047 under
+#   #1008: when a large deleted backlog has not yet been deducted by
+#   GitHub's "Usage is recalculated every 6-12 hours" pass, the counter can
+#   transiently read exhausted even though live usage is small. Keeping the
+#   standing set minimal shrinks the window in which that lag can bite.
+#
+# SCOPE / SAFETY:
+#   - Operates ONLY on THIS repo's own artifacts via the repo-scoped
+#     actions/artifacts REST API. Does not touch other repos.
+#   - Uses the default GITHUB_TOKEN with `actions: write` (sufficient to
+#     DELETE artifacts in this repo). No extra OAuth scope, no PAT.
+#   - Conservative: deletes only artifacts OLDER than MAX_AGE_DAYS (default
+#     6). `.dockerbuild` records are pure build forensics — a 6-day window
+#     preserves recent build diagnostics while preventing accumulation.
+#   - Pagination-mutation hardened (lesson from the #1009 immediate prune):
+#     deleting artifacts mutates the very list being paged, so a single
+#     snapshot-then-delete pass yields benign 404s on entries that shifted
+#     out of the snapshot. This sweep takes a FRESH list each pass and
+#     repeats until no old artifacts remain, treating 404 as "already gone".
+#   - Idempotent and self-limiting: a no-op when nothing is old enough.
+#
+# RUNNER POSTURE: postgresql CI runs on GitHub-hosted ubuntu-latest (via the
+# reusable workflow SirSplat/workflows/.github/workflows/
+# build-and-push-docker-image.yaml@main, runs-on: ubuntu-latest). Per the
+# #1009 brief, this prune mirrors that posture: ubuntu-latest is correct
+# here (the team's self-hosted-Windows-everywhere posture is for the UE/web
+# CI on DESKTOP-BU2DL5D; this repo never used it). The prune is pure `gh`
+# REST calls, so hosted is cheap and appropriate. `gh` is preinstalled on
+# ubuntu-latest runners.
+
+name: Prune old CI artifacts (#1009)
+
+on:
+  schedule:
+    # 03:23 UTC nightly. Odd minute avoids top-of-hour scheduler congestion;
+    # offset from GOAPDemo's 03:17 sweep so the two don't contend.
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: 'Delete artifacts older than this many days'
+        required: false
+        default: '6'
+        type: string
+
+permissions: {}  # Default-deny at workflow scope; job grants the minimum.
+
+jobs:
+  prune:
+    name: Prune artifacts older than MAX_AGE_DAYS
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: write   # required to DELETE artifacts in this repo
+    env:
+      GH_TOKEN: ${{ github.token }}
+      MAX_AGE_DAYS: ${{ github.event.inputs.max_age_days || '6' }}
+
+    steps:
+      - name: Prune artifacts older than ${{ env.MAX_AGE_DAYS }} days
+        run: |
+          set -euo pipefail
+          cutoff="$(date -u -d "-${MAX_AGE_DAYS} days" +%Y-%m-%dT%H:%M:%SZ)"
+          echo "Prune cutoff (UTC): $cutoff - deleting artifacts created before this."
+
+          repo="$GITHUB_REPOSITORY"
+          total_deleted=0
+
+          # Pagination-mutation hardening: deleting artifacts mutates the
+          # list we page over, so iterate in passes against a FRESH snapshot
+          # each time and stop when no old artifacts remain. A 404 on DELETE
+          # means the artifact already vanished (expired or deleted in a
+          # prior pass) - benign, counted as success-equivalent.
+          for pass in $(seq 1 20); do
+            ids="$(gh api "repos/$repo/actions/artifacts" --paginate \
+              --jq ".artifacts[] | select(.created_at < \"$cutoff\") | .id")"
+            count="$(printf '%s\n' "$ids" | grep -c . || true)"
+            if [ "$count" -eq 0 ]; then
+              echo "pass $pass: 0 artifacts older than cutoff remain - done."
+              break
+            fi
+            echo "pass $pass: $count artifact(s) older than cutoff to delete"
+            pass_deleted=0
+            for id in $ids; do
+              if gh api -X DELETE "repos/$repo/actions/artifacts/$id" --silent 2>/dev/null; then
+                pass_deleted=$((pass_deleted + 1))
+              fi
+              # else: 404/transient - already gone or will retry next pass
+            done
+            total_deleted=$((total_deleted + pass_deleted))
+            echo "pass $pass: deleted $pass_deleted (running total $total_deleted)"
+          done
+
+          echo "Prune complete: deleted $total_deleted artifact(s) older than ${MAX_AGE_DAYS} days."
+
+          # Echo current standing usage so the run page shows post-prune state.
+          remaining_count="$(gh api "repos/$repo/actions/artifacts" --paginate --jq '.artifacts[].id' 2>/dev/null | grep -c . || true)"
+          remaining_bytes="$(gh api "repos/$repo/actions/artifacts" --paginate --jq '.artifacts[].size_in_bytes' 2>/dev/null | awk '{s+=$1} END {print s+0}')"
+          remaining_mb="$(awk "BEGIN{printf \"%.2f\", ${remaining_bytes:-0}/1048576}")"
+          echo "Standing usage for $repo: $remaining_count artifact(s), ~${remaining_mb} MB."
